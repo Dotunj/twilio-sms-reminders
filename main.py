@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, abort, make_response
 import schedule, time, atexit, string, random
-from json_file_helper import read_json, create_json, update_json, write_json, delete_json, reminder_json_exists
+from reminder_json_helper import read_reminder_json, create_reminder_json, update_reminder_json, write_reminder_json, reminder_json_exists
 from dateutil.relativedelta import relativedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -16,7 +16,7 @@ twilio_client = Client()
 
 @app.route('/api/reminders', methods=['GET'])
 def get_reminders():
-    reminders = read_json()
+    reminders = read_reminder_json()
     return jsonify({'reminders': reminders})
 
 
@@ -31,30 +31,27 @@ def create_reminder():
         'due_date': req_data['due_date']
     }
 
-    if reminder_json_exists():
-        update_json(reminder)
-    else:
-        create_json(reminder)
+    create_reminder_json(reminder)
     return jsonify({'reminder': reminder}), 201
 
 @app.route('/api/reminders/<int:reminder_id>', methods=['DELETE'])
 def delete_reminder(reminder_id):
-    reminders = read_json()
+    reminders = read_reminder_json()
     reminder = [reminder for reminder in reminders if reminder['id'] == reminder_id]
     if len(reminder) == 0:
        abort(404)
     data = {}
     reminders.remove(reminder[0])
     data['reminders'] = reminders
-    write_json(data)
+    write_reminder_json(data)
     return jsonify({'message': 'Reminder has been removed successfully'})
 
 def generate_reminder_id():
-    reminders, reminders_length = read_json(), len(read_json())
+    reminders, reminders_length = read_reminder_json(), len(read_reminder_json())
     return reminders[-1]['id'] + 1 if reminders_length > 0 else 1
     
 def find_reminders_due():
-    reminders = read_json()
+    reminders = read_reminder_json()
     reminders_due = [
         reminder for reminder in reminders if reminder['due_date'] == str(date.today())
     ]
@@ -75,14 +72,14 @@ def send_whatsapp_reminder(reminders):
         update_due_date(reminder)
 
 def update_due_date(reminder):
-    reminders = read_json();
+    reminders = read_reminder_json();
     data = {}
     reminders.remove(reminder)
     new_due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d').date() + relativedelta(months=1)
     reminder['due_date'] = str(new_due_date)
     reminders.append(reminder)
     data['reminders'] = reminders
-    write_json(data)
+    write_reminder_json(data)
 
 
 
@@ -92,15 +89,15 @@ def not_found(error):
 
 
 # create schedule for sending reminders
-scheduler = BackgroundScheduler()
-scheduler.start()
-scheduler.add_job(func=find_reminders_due,
-                  trigger=IntervalTrigger(seconds=40),
-                  id='send_reminders_due_job',
-                  name='Send WhatsApp Reminders',
-                  replace_existing=True)
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+# scheduler = BackgroundScheduler()
+# scheduler.start()
+# scheduler.add_job(func=find_reminders_due,
+#                   trigger=IntervalTrigger(seconds=40),
+#                   id='send_reminders_due_job',
+#                   name='Send WhatsApp Reminders',
+#                   replace_existing=True)
+# # Shut down the scheduler when exiting the app
+# atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == '__main__':
     app.run()
