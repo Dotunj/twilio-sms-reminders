@@ -23,13 +23,13 @@ def create_reminder_json(reminder):
 
 
 def update_reminder_json(reminder):
-    with open('reminder.json', 'r+') as reminder_json:
+    with open('reminder.json') as reminder_json:
         data = json.load(reminder_json)
         reminders = data['reminders']
         reminders.append(reminder)
         write_reminder_json(data)
 
-def write_reminder_json(data, filename='reminder.json'):
-    with open(filename, 'w+') as outfile:
+def write_reminder_json(data):
+    with open('reminder.json', 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
