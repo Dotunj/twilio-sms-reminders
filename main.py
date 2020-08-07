@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, abort, make_response
 from reminder_json_helper import read_reminder_json, create_reminder_json, update_reminder_json, write_reminder_json
 import uuid
@@ -5,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime, date
 from twilio.rest import Client
 from dotenv import load_dotenv
-import os
 load_dotenv()
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -103,9 +103,10 @@ def send_sms_reminder(reminders):
     for reminder in reminders:
         twilio_from = os.getenv("TWILIO_SMS_FROM")
         to_phone_number = reminder['phone_number']
-        message = twilio_client.messages.create(body=reminder['message'],
-                                                from_=f"{twilio_from}",
-                                                to=f"{to_phone_number}")
+        message = twilio_client.messages.create(
+            body=reminder['message'],
+            from_=f"{twilio_from}",
+            to=f"{to_phone_number}")
         update_due_date(reminder)
 
 
@@ -113,7 +114,7 @@ def send_sms_reminder(reminders):
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(func=find_reminders_due,
-                  trigger=IntervalTrigger(seconds=10),
+                  trigger=IntervalTrigger(seconds=60),
                   id='send_reminders_due_job',
                   name='Send WhatsApp Reminders',
                   replace_existing=True)
@@ -122,3 +123,4 @@ atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == '__main__':
     app.run()
+
