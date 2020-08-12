@@ -3,9 +3,9 @@ from reminder_json_helper import read_reminder_json, write_reminder_json
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, date
 from twilio.rest import Client
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 twilio_client = Client()
 
