@@ -7,7 +7,7 @@ from twilio.rest import Client
 
 # load_dotenv()
 
-# twilio_client = Client()
+twilio_client = Client()
 
 
 def find_reminders_due():
