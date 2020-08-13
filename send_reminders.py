@@ -3,15 +3,21 @@ from reminder_json_helper import read_reminder_json, write_reminder_json
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, date
 from twilio.rest import Client
+from twilio.http.http_client import TwilioHttpClient
 from dotenv import load_dotenv
 
 load_dotenv()
 
-twilio_client = Client()
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+proxy_client = TwilioHttpClient(proxy={'http': os.getenv("HTTP_PROXY"), 'https': os.getenv("HTTPS_PROXY")})
+
+twilio_client = Client(account_sid, auth_token, http_client=proxy_client)
 
 
 def find_reminders_due():
     reminders = read_reminder_json()
+    print(f"finding reminders due :{reminders}")
     reminders_due = [
         reminder for reminder in reminders
         if reminder['due_date'] == str(date.today())
