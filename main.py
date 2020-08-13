@@ -1,6 +1,6 @@
 import os
-from flask import Flask, request, jsonify, abort, make_response
-from reminder_json_helper import read_reminder_json, create_reminder_json, update_reminder_json, write_reminder_json
+from flask import Flask, request, jsonify, abort
+from reminder_json_helper import read_reminder_json, create_reminder_json, write_reminder_json
 import uuid
 
 app = Flask(__name__)

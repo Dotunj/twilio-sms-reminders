@@ -8,16 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 proxy_client = TwilioHttpClient(proxy={'http': os.getenv("HTTP_PROXY"), 'https': os.getenv("HTTPS_PROXY")})
-
-twilio_client = Client(account_sid, auth_token, http_client=proxy_client)
+twilio_client = Client(http_client=proxy_client)
 
 
 def find_reminders_due():
     reminders = read_reminder_json()
-    print(f"finding reminders due :{reminders}")
     reminders_due = [
         reminder for reminder in reminders
         if reminder['due_date'] == str(date.today())
@@ -27,7 +23,6 @@ def find_reminders_due():
 
 def send_sms_reminder(reminders):
     for reminder in reminders:
-        print('sending reminder')
         twilio_from = os.getenv("TWILIO_SMS_FROM")
         to_phone_number = reminder['phone_number']
         twilio_client.messages.create(
